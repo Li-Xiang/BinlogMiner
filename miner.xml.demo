@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+  XML is explicitly a case-sensitive language. XML escape characters, There are only five:
+    "     &quot;
+    '     &apos;
+    <     &lt;
+    >     &gt;
+    &     &amp;
+ -->
+ 
+ 
+<Configuration>
+	<!-- little_endian or big_endian -->
+	<ByteOrder>little_endian</ByteOrder>
+	<DefaultCharset>utf8</DefaultCharset>
+	<Binlogs>
+		<File>/data/mysql/5.7.18/binlog/blog.000016</File> 
+	</Binlogs>
+	<OutputTable dsid="output-database" truncate="true">binlogminer</OutputTable>
+	<ReferenceTable dsid="source-database">information_schema.columns</ReferenceTable>
+	<DataSource id="source-database">
+		<Driver>com.mysql.cj.jdbc.Driver</Driver>
+		<Url>jdbc:mysql://127.0.0.1/information_schema</Url>
+		<User>root</User>
+		<Password>Passw0rd</Password>
+		<Properties>useSSL=true;useUnicode=true;characterEncoding=UTF-8;rewriteBatchedStatements=true</Properties>
+	</DataSource>
+	<DataSource id="output-database">
+		<Driver>org.sqlite.JDBC</Driver>
+		<Url>jdbc:sqlite:/home/think/miner.db</Url>
+		<Properties>journal_mode=WAL;wal_autocheckpoint=6000;synchronous=NORMAL;cache_size=8000</Properties>
+	</DataSource>
+</Configuration>

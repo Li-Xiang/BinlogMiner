@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+
+<project name="BinlogMiner" basedir="." default="build-jar">
+	<description>MySQL Binlog Miner</description>
+	<!-- global properties for this build -->
+	<property environment="env" />
+	<property name="name" value="binlogminer" />
+	<property name="title" value="MySQL Binlog Miner" />
+	<property name="version" value="1.0.0" />
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="java.lib.dir" value="${env.JAVA_HOME}/lib" />
+	<property name="build.classes.dir" value="${basedir}/bin" />
+	<property name="dist.jar" value="${basedir}/${name}.jar" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="javac.optimize" value="false" />
+	<property name="javac.debug" value="true" />
+	<property name="javac.deprecation" value="false" />
+	<!--property name="javac.source" value="1.7" /-->
+	<!--property name="javac.target" value="1.7" /-->
+
+	<path id="compile.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+		</fileset>
+		<fileset dir="${java.lib.dir}">
+			<include name="tools.jar" />
+		</fileset>
+	</path>
+	
+	<target name="init">
+		<mkdir dir="${build.classes.dir}" />
+	</target>
+
+	<target name="compile" depends="init">
+		<javac debug="${javac.debug}" 
+			   debuglevel="${debuglevel}" 
+			   includeantruntime="false" 
+			   destdir="${build.classes.dir}" 
+			   srcdir="${src.dir}" 
+			   optimize="${javac.optimize}" 
+			   deprecation="${javac.deprecation}" 			    
+			   encoding="UTF-8">
+			<classpath refid="compile.classpath" />
+			<!--compilerarg value="-Xlint:unchecked" /-->
+			<!--compilerarg value="-Xlint:deprecation" /-->
+		</javac>
+	</target>
+
+	<target name="clean" depends="init" description="removes generated files">
+		<delete dir="${build.classes.dir}" />
+		<delete file="${dist.jar}" />
+	</target>
+
+	<target depends="clean" name="cleanall" />
+	<target name="build-jar" depends="compile" description="Generate the jar file.">
+		<jar destfile="${dist.jar}">
+			<fileset dir="${build.classes.dir}" />
+			<fileset dir="${src.dir}" />
+			<manifest>
+				<attribute name="Main-Class" value="org.littlestar.mysql.binlog.BinlogMinerApp" />
+				<attribute name="Specification-Title" value="${title}" />
+			</manifest>
+		</jar>
+	</target>
+</project>
