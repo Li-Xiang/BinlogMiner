@@ -69,8 +69,6 @@ public class TableMapEventOptionalMetaData {
 			if (fieldLength > 0) {
 				byte[] fieldValue = Arrays.copyOfRange(bodyData, pos, pos += fieldLength);
 				optionalMetaData.put(fieldType, fieldValue);
-				System.out.println("Type: 0x"+ParserHelper.getHexString(rawFieldType)
-					+"Value: 0x" +ParserHelper.getHexString(fieldValue));
 			}
 		}
 		getSimplePrimaryKey();

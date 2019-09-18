@@ -106,80 +106,84 @@ public class EventBodyDefaultImpl implements EventBody {
 		return ParserHelper.getInteger(bytes, order);
 	}
 	
-	protected int getUnsignedInteger(final byte[] bytes, int from, int to) {
+	protected int getUnsignedInteger(byte b) {
+		return ParserHelper.getUnsignedInteger(b);
+	}
+	
+	protected int getUnsignedInteger(byte[] bytes, int from, int to) {
 		byte[] raw = Arrays.copyOfRange(bytes, from, to);
 		return ParserHelper.getUnsignedInteger(raw, order); 
 	}
 	
-	protected int getUnsignedInteger(final byte[] bytes) {
+	protected int getUnsignedInteger(byte[] bytes) {
 		return ParserHelper.getUnsignedInteger(bytes, order); 
 	}
 	
-	protected long getLong(final byte[] bytes, int from, int to) {
+	protected long getLong(byte[] bytes, int from, int to) {
 		byte[] raw = getBytes(bytes, from, to);
 		return ParserHelper.getLong(raw, order);
 	}
 	
-	protected long getLong(final byte[] bytes) {
+	protected long getLong(byte[] bytes) {
 		return ParserHelper.getLong(bytes, order);
 	}
 	
-	protected long getUnsignedLong(final byte[] bytes, int from, int to) {
+	protected long getUnsignedLong(byte[] bytes, int from, int to) {
 		byte[] raw = getBytes(bytes, from, to);
 		return ParserHelper.getUnsignedLong(raw, order);
 	}
 	
-	protected long getUnsignedLong(final byte[] bytes) {
+	protected long getUnsignedLong(byte[] bytes) {
 		return ParserHelper.getUnsignedLong(bytes, order);
 	}
 	
-	protected float getFloat(final byte[] bytes, int from, int to) {
+	protected float getFloat(byte[] bytes, int from, int to) {
 		byte[] raw = getBytes(bytes, from, to);
 		return ParserHelper.getFloat(raw, order);
 	}
 	
-	protected float getFloat(final byte[] bytes) {
+	protected float getFloat(byte[] bytes) {
 		return ParserHelper.getFloat(bytes, order);
 	}
 	
-	public double getDouble(final byte[] bytes, int from, int to) {
+	public double getDouble(byte[] bytes, int from, int to) {
 		byte[] raw = getBytes(bytes, from, to);
 		return ParserHelper.getDouble(raw, order);
 	}
 	
-	public double getDouble(final byte[] bytes) {
+	public double getDouble(byte[] bytes) {
 		return ParserHelper.getDouble(bytes, order);
 	}
 	
-	protected BitSet getBitSet(final byte[] bytes, int from, int to) {
+	protected BitSet getBitSet(byte[] bytes, int from, int to) {
 		byte[] raw = getBytes(bytes, from, to);
 		return ParserHelper.getBitSet(raw, order);
 	}
 	
-	protected BitSet getBitSet(final byte[] bytes) {
+	protected BitSet getBitSet(byte[] bytes) {
 		return ParserHelper.getBitSet(bytes, order);
 	}
 	
-	protected byte[] getPackedInteger(final byte[] bytes, int from) {
+	protected byte[] getPackedInteger(byte[] bytes, int from) {
 		return ParserHelper.getPackedInteger(bytes, from);
 	}
 	
-	protected Object[] getPackedString(final byte[] bytes, final int from) {
+	protected Object[] getPackedString(byte[] bytes, int from) {
 		return ParserHelper.getPackedString(bytes, from, order);
 	}
 	
-	protected String getString(final byte[] bytes, int from, int to) {
+	protected String getString(byte[] bytes, int from, int to) {
 		byte[] raw = getBytes(bytes, from, to);
 		return ParserHelper.getString(raw);
 	}
 	
-	protected String getNulTerminatedString(final byte[] bytes, int from, int to) {
+	protected String getNulTerminatedString(byte[] bytes, int from, int to) {
 		byte[] raw = ParserHelper.getNulTerminatedString(bytes, from, to);
 		return getString(raw, 0, raw.length);
 	}
 	
 	
-	protected byte[] getBytes(final byte[] bytes, int from, int to) {
+	protected byte[] getBytes(byte[] bytes, int from, int to) {
 		return  Arrays.copyOfRange(bytes, from, to);
 	}
 }

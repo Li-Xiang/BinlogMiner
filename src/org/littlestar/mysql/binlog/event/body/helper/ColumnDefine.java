@@ -86,6 +86,8 @@ public class ColumnDefine {
 		case 0x08: // LONGLONG
 		case 0x09: // INT24
 		case 0xf6: // NEWDECIMAL
+		case 0xf7: // ENUM
+		case 0xf8: // SET
 			return true;
 		default:
 			return false;

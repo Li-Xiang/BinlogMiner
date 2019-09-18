@@ -87,7 +87,7 @@ public class Demo3 {
 					for (StatmentPair stmt : pairArray) {
 						String redoSQL = stmt.getRedoStatement();
 						// not support date type, so you need to change to string type:
-						// ORACLE> alter table tpcc.employees modify ( hire_date varchar2(30));
+						// ORACLE SQL> alter table tpcc.employees modify ( hire_date varchar2(30));
 						// In real-world, you need to coding to change to target RDBMS's syntax.
 						Statement repStmt = repConnect.createStatement();
 						repStmt.execute(redoSQL);

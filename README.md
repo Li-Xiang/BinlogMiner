@@ -15,7 +15,7 @@ contents and flashback your table/database by generated executable UNDO/REDO sta
 ### Build/Install
 There are 2 ways to Install BinlogMiner.
 
-1#. dowload https://github.com/Li-Xiang/BinlogMiner/release and extract it.
+1#. dowload  from url (https://github.com/Li-Xiang/BinlogMiner/tree/master/release) and extract it.
 ```shell
 $ tar -xzvf xxx.tar.gz
 ```
@@ -51,7 +51,7 @@ Note: Command line mode not support output to table, and couldn't get column nam
 - Using configuration file(miner.xml)
 <pre>
 Configuration file is fixed name with miner.xml in BinlogMiner running directory. 
-Usage reference the 'miner.xml.sample' file.
+Usage reference the 'miner.xml.demo' file.
 </pre>
 ### Limit & Frequently Questions
 - MySQL binlog default permissions mode is 640, if run within mysql server owner or owner group, need to check you has read files privileges.

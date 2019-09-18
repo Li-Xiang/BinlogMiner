@@ -44,19 +44,16 @@ public class BinlogMinerApp {
 		LogManager.getLogManager().reset();
 		Logger rootLogger = Logger.getLogger("");
 		rootLogger.setUseParentHandlers(false);
-
 		FileHandler fileHandler = new FileHandler(LOG_FILE, 2097152, 4, true); //Append, Max 2 MB, 4 files.
 		Formatter logFormatter = new LogRecordFormatter();
 		fileHandler.setFormatter(logFormatter);
 		fileHandler.setLevel(Level.ALL);
 		fileHandler.setEncoding("UTF-8");
 		rootLogger.addHandler(fileHandler);
-
 		ConsoleHandler consoleHandler = new ConsoleHandler();
 		consoleHandler.setFormatter(logFormatter);
 		consoleHandler.setLevel(Level.INFO);
 		rootLogger.addHandler(consoleHandler);
-		
 		rootLogger.setLevel(Level.INFO);
 	}
 	
@@ -79,15 +76,15 @@ public class BinlogMinerApp {
 	
 	private static boolean createOutputTable(final Connection connection, String tableName) {
 		final String createTableStmt = 
-				"create table if not exists "+tableName+" ("+
-				"    event_timestamp timestamp,"+
-				"    event_type varchar(40),"+
-				"    table_schema varchar(64),"+
-				"    table_name varchar(64),"+
-				"    start_pos int,"+
-				"    end_pos int,"+
-				"    undo_stmt text(10000),"+
-				"    redo_stmt text(10000)"+
+				"create table if not exists "+tableName+" (" +
+				"    event_timestamp timestamp," +
+				"    event_type varchar(40)," +
+				"    table_schema varchar(64)," +
+				"    table_name varchar(64)," +
+				"    start_pos int," +
+				"    end_pos int," +
+				"    undo_stmt text(10000)," +
+				"    redo_stmt text(10000)" +
 				") ";
 		try {
 			Statement stmt = connection.createStatement();
@@ -177,7 +174,7 @@ public class BinlogMinerApp {
 				logger.info("Truncate output table ...");
 				truncateOutputTable(outputConnection, outputTableName);
 			}
-		} 
+		}
 		
 		boolean withReferenceTable = false;
 		String referenceTableName = config.getReferenceTableName();
@@ -221,7 +218,6 @@ public class BinlogMinerApp {
 					}
 				}
 				//
-				
 			} catch (Throwable e) {
 				logger.log(Level.SEVERE, "Miner thread throw exception.", e);
 			}
@@ -235,6 +231,5 @@ public class BinlogMinerApp {
 			referenceConnection.close();
 		} catch (Throwable e) {
 		}
-
 	}
 }

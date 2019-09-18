@@ -48,7 +48,7 @@ public class BinlogMinerConfigBuilder {
 
 	private LinkedHashSet<File> binlogFileSet = new LinkedHashSet<File>();
 	private String defaultCharset = null;
-	private ByteOrder byteOrder = null;
+	private ByteOrder byteOrder = ByteOrder.nativeOrder();
 	private Connection outpuConnection = null;
 	private String outputTableName = null;
 	private String outputTableDsid = null;

@@ -18,7 +18,6 @@ package org.littlestar.mysql.binlog.event.body.impl;
 
 import java.math.BigDecimal;
 import java.nio.ByteOrder;
-
 import java.text.SimpleDateFormat;
 
 import java.util.ArrayList;
@@ -30,6 +29,7 @@ import java.util.logging.Logger;
 import org.littlestar.mysql.binlog.event.header.EventHeader;
 import org.littlestar.mysql.binlog.parser.BinlogFileMeta;
 import org.littlestar.mysql.binlog.parser.ParserHelper;
+
 import org.littlestar.mysql.binlog.event.body.helper.RowImage;
 import org.littlestar.mysql.binlog.event.body.helper.TableDefine;
 import org.littlestar.mysql.binlog.event.EventType;
@@ -263,15 +263,36 @@ public class RowsEventBody extends EventBodyDefaultImpl {
 				case 0x09:   // INT24   : 4 bytes
 					columnImage.setColumnValue(getInteger(bodyData, pos, pos += 4));
 					break;
-				case 0xfe: // ProtocolBinary::MYSQL_TYPE_STRING;  
-					Object[] lenEncString = getPackedString(bodyData, pos);
-					int strLen = (int)lenEncString[0];
-					byte[] rawStringValue = (byte[])lenEncString[1];
-					pos += strLen;
-					if (charsetName != null) {
-						columnImage.setColumnValue(ParserHelper.getString(rawStringValue, charsetName));
+				case 0xfe: case 0xf7: case 0xf8:// ProtocolBinary::MYSQL_TYPE_STRING;  
+					/* 
+					 * This enumeration value is only used internally and cannot exist in a binlog.
+					 *   0xf7: // ProtocolBinary::MYSQL_TYPE_ENUM; 
+					 *   0xf8: // ProtocolBinary::MYSQL_TYPE_SET; 
+					 * char, enum and set column type are real storage in ProtocolBinary::MYSQL_TYPE_STRING(0xfe)
+					*/
+					byte[] rawStringMeta = colDef.getColumnMeta();
+					int meta0 = getUnsignedInteger(rawStringMeta[0]); //real type
+					int meta1 = getUnsignedInteger(rawStringMeta[1]); //define length
+					int stringLength;
+					if (meta0 == 0xf7 | meta0 == 0xf8) {// ProtocolBinary::MYSQL_TYPE_ENUM; // ProtocolBinary::MYSQL_TYPE_SET;
+						stringLength = meta1;
+						int enumIndexValue = getUnsignedInteger(bodyData, pos, pos += stringLength);
+						columnImage.setColumnValue(enumIndexValue);
+						colDef.setColumnType(rawStringMeta[0]);
 					} else {
-						columnImage.setColumnValue(rawStringValue);
+						if ((meta0 & 0x30) != 0x30) {
+							int realCode = meta0 | 0x30;
+							colDef.setColumnType((byte) realCode);
+							meta1 = meta1 | (((meta0 & 0x30) ^ 0x30) << 4);
+						}
+						int stringPkgLength = meta1 < 256 ? 1 : 2;
+						stringLength = getUnsignedInteger(bodyData, pos, pos += stringPkgLength);
+						byte[] rawCharValue = getBytes(bodyData, pos, pos += stringLength);
+						if (charsetName != null) {
+							columnImage.setColumnValue(ParserHelper.getString(rawCharValue, charsetName));
+						} else {
+							columnImage.setColumnValue(rawCharValue);
+						}
 					}
 					break;
 				case 0x0f: // ProtocolBinary::MYSQL_TYPE_VARCHAR; 
@@ -387,29 +408,29 @@ public class RowsEventBody extends EventBodyDefaultImpl {
 				引入了"fractional seconds part". "fractional seconds part"长度是根据这些类型的定义决定的
 				比如col1 timestamp(3); 所以这些类型是可变长的，比秒更小的部分的存储长度根据这些列的meta-def来决定。
 				*/
-				case 0x0d:  // YEAR: 1 byte, little endian 
-					byte[] rawYear = getBytes(bodyData, pos, pos += 1);
-					int year = ParserHelper.getInteger(rawYear, ByteOrder.LITTLE_ENDIAN);
-					columnImage.setColumnValue(year);
-					break;	
+				case 0x0d: // YEAR: 1 byte, little endian
+					byte[] rawYearValue = getBytes(bodyData, pos, pos += 1);
+					int yearValue = ParserHelper.getUnsignedInteger(rawYearValue, ByteOrder.LITTLE_ENDIAN);
+					yearValue += 1900;
+					columnImage.setColumnValue(yearValue);
+					break;
 				case 0x0e:  // NEWDATE ??
 				case 0x0a:  // DATE: 3 byte
-					byte[] rawDate = getBytes(bodyData, pos, pos += 3);
-					int[] dateArray = ParserHelper.getDateV1(rawDate);
-					Date date;
-					try {
-						SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-						date = dateFormat.parse(dateArray[0] + "-" + dateArray[1] + "-" + dateArray[2]);
-					} catch (Throwable e) {
-						logger.log(Level.WARNING, "", e);
-						date = null;
-					}
-					columnImage.setColumnValue(date);
+					byte[] rawDateValue = getBytes(bodyData, pos, pos += 3);
+					int[] dateArray = ParserHelper.getDateV1(rawDateValue);
+					String strDateYy = Integer.toString(dateArray[0]);
+					String strDateMm = ParserHelper.lpad(Integer.toString(dateArray[1]), 2, '0');
+					String strDateDd = ParserHelper.lpad(Integer.toString(dateArray[2]), 2, '0');
+					String dateValue =  strDateYy + "-" + strDateMm + "-" + strDateDd;
+					columnImage.setColumnValue(dateValue);
 					break;
 				case 0x0b:  // TIME: 4 bytes
-					byte[] rawTime = getBytes(bodyData, pos, pos += 4);
-					int[] timeArray = ParserHelper.getTimeV1(rawTime);
-					String timeValue = timeArray[0]+":"+timeArray[1]+":"+timeArray[2];
+					byte[] rawTimeValue = getBytes(bodyData, pos, pos += 4);
+					int[] timeArray = ParserHelper.getTimeV1(rawTimeValue);
+					String strHh = ParserHelper.lpad(Integer.toString(timeArray[0]), 2, '0');
+					String strMi = ParserHelper.lpad(Integer.toString(timeArray[1]), 2, '0');
+					String strSs = ParserHelper.lpad(Integer.toString(timeArray[0]), 2, '0');
+					String timeValue = strHh + ":" + strMi + ":" + strSs;
 					columnImage.setColumnValue(timeValue);
 					break;	
 				case 0x0c:  // DATETIME 8 bytes
@@ -418,12 +439,6 @@ public class RowsEventBody extends EventBodyDefaultImpl {
 					int[] datetimeArray = ParserHelper.getDateTimeV1(rawDatePacked, rawTimePacked);
 					String strValue = datetimeArray[0]+"-"+datetimeArray[1]+"-"+datetimeArray[2]
 							+" "+datetimeArray[3]+":"+datetimeArray[4]+":"+datetimeArray[5];	
-					/*Date dateTime = null;
-					try {
-						SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-						dateTime =dtFormat.parse(strValue);
-					} catch (ParseException e) {
-					}*/
 					columnImage.setColumnValue(strValue);
 					break;
 				case 0x07: // TIMESTAMP
@@ -476,7 +491,10 @@ public class RowsEventBody extends EventBodyDefaultImpl {
 				case 0x13:  // TIME2: 3 bytes + fractional-seconds storage, big endian
 					byte[] rawTime2 = getBytes(bodyData, pos , pos += 3);
 					int[] time2Array = ParserHelper.getTimeV2(rawTime2);
-					String time2 = time2Array[0] * time2Array[1] + ":" + time2Array[2] + ":" + time2Array[3];
+					String strTime2Hh = ParserHelper.lpad(Integer.toString(time2Array[0] * time2Array[1]), 2, '0');
+					String strTime2Mi = ParserHelper.lpad(Integer.toString(time2Array[2]), 2, '0');
+					String strTime2Ss = ParserHelper.lpad(Integer.toString(time2Array[3]), 2, '0');
+					String time2 = strTime2Hh + ":" + strTime2Mi + ":" + strTime2Ss;
 					byte[] rawTime2Meta = colDef.getColumnMeta();
 					int tFsp = getUnsignedInteger(rawTime2Meta);
 					int tFractionLenght = ParserHelper.getTimeFractionalLength(tFsp);
@@ -491,6 +509,10 @@ public class RowsEventBody extends EventBodyDefaultImpl {
 					byte[] rawBlobMeta = colDef.getColumnMeta();
 					int blobMetaValue = getUnsignedInteger(rawBlobMeta);
 					/*
+					case 0xf9: // ProtocolBinary::MYSQL_TYPE_TINY_BLOB; 
+					case 0xfa: // ProtocolBinary::MYSQL_TYPE_MEDIUM_BLOB; 
+					case 0xfb: // ProtocolBinary::MYSQL_TYPE_LONG_BLOB; 
+					对应的都是0xfc： MYSQL_TYPE_BLOB
 					switch (blobMetaValue) {
 					case 1: // "TINYBLOB/TINYTEXT"
 					case 2: // "BLOB/TEXT"
@@ -507,13 +529,7 @@ public class RowsEventBody extends EventBodyDefaultImpl {
 						columnImage.setColumnValue(rawBlobValue);
 					}
 					break;
-				/* This enumeration value is only used internally and cannot exist in a binlog.
-				case 0xf7: // ProtocolBinary::MYSQL_TYPE_ENUM; 
-				case 0xf8: // ProtocolBinary::MYSQL_TYPE_SET;
-				case 0xf9: // ProtocolBinary::MYSQL_TYPE_TINY_BLOB; 
-				case 0xfa: // ProtocolBinary::MYSQL_TYPE_MEDIUM_BLOB; 
-				case 0xfb: // ProtocolBinary::MYSQL_TYPE_LONG_BLOB; 
-				*/
+
 				case 0x10: // ProtocolBinary::MYSQL_TYPE_BIT;
 					/* Meta-data: bit_len, bytes_in_rec, 2 bytes */
 					byte[] rawBitMeta = colDef.getColumnMeta();
