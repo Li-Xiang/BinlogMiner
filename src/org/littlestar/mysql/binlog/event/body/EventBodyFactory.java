@@ -20,7 +20,7 @@ import org.littlestar.mysql.binlog.event.EventType;
 import org.littlestar.mysql.binlog.event.body.EventBody;
 import org.littlestar.mysql.binlog.event.body.impl.EventBodyDefaultImpl;
 import org.littlestar.mysql.binlog.event.body.impl.FormatDescriptionEventBody;
-import org.littlestar.mysql.binlog.event.body.impl.GtidEventBody;
+import org.littlestar.mysql.binlog.event.body.impl.GtidLogEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.PreviousGtidsLogEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.QueryEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.RotateEventBody;
@@ -62,7 +62,7 @@ public class EventBodyFactory {
 			eventBody = new RowsEventBody(bodyData, eventHeader, binlogFileMeta);
 			break;
 		case GTID_LOG_EVENT:
-			eventBody = new GtidEventBody(bodyData, eventHeader, binlogFileMeta);
+			eventBody = new GtidLogEventBody(bodyData, eventHeader, binlogFileMeta);
 			break;
 		case ROTATE_EVENT:
 			eventBody = new RotateEventBody(bodyData, eventHeader, binlogFileMeta);

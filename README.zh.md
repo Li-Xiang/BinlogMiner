@@ -1,5 +1,5 @@
 ## BinlogMiner
-BinlogMiner是一个开源的, 基于Java的MySQL二进制日志分析库和实用工具。通过BinlogMiner, 你可以轻松的解析MySQL二进制日志中的事件, 还可以根据解析出的可执行的UNDO/REDO语句, 实现数据库或者数据表的重做和回滚(闪回)。
+BinlogMiner是一个开源的, 基于Java的MySQL二进制日志分析库和实用工具(挖掘工具和分析工具)。通过BinlogMiner, 你可以轻松的解析MySQL二进制日志中的事件, 还可以根据解析出的可执行的UNDO/REDO语句, 实现数据库或者数据表的重做和回滚(闪回); 通过BinlogParser可以解析出MySQL二进制日志的内容。
 
 ### 关键特性
 - 支持解析当前所有的二进制格式, 包括{STATEMENT|ROW|MIXED}; (但只有row based的binlog能生成回滚语句.)
@@ -11,7 +11,7 @@ BinlogMiner是一个开源的, 基于Java的MySQL二进制日志分析库和实�
 ### 安装/编译
 可以直接下载使用已经编译好的二进制JAR包，也可以克隆最新的源代码，通过ANT自己编译，或者通过Eclipse等工具编译。
 
-1#. 下载二进制版本（https://github.com/Li-Xiang/BinlogMiner/tree/master/release），解压缩后即可使用。
+1#. 下载二进制版本（https://sourceforge.net/projects/binlongminer/），解压缩后即可使用。
 ```shell
 $ tar -xzvf xxx.tar.gz
 ```
@@ -35,6 +35,47 @@ SQLite: https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/
 </pre>
 
 ### 用法
+#### (1). 二进制日志分析工具 - binlogparser
+与自带的mysqlbinlog不同点：
+  可以通过指定偏移（--start-position|--stop-position）来查找或者输出指定范围的事件，偏移值不需要必须为一个事件的开始位置；
+  如果开启了gtid模式（gtid_mode=on）,可以指定gtid范围（--start-gtid|--stop-gtid）；
+<pre>
+$ ./binlogparser.sh --help
+usage: binlogparser.sh [options] log-files
+options:
+ -?,--help                                      Display this help and exit.
+ -b,--byte-order <big_endian | little_endian>   Specify the byte order of the binlog file, the default is the native
+                                                byte order of this Java virtual machine is running.
+ -c,--character-set <name>                      Set the default character set, the default is 'utf8'.
+ -D,--disable-string-decode                     Disable decode the string value, instead of output string's hex value.
+ -e,--stop-position <#>                         Stop reading the binlog at first event having a offset equal or
+                                                posterior to the argument.
+    --event-header-only                         Output common event header only.
+ -s,--start-position <#>                        Start reading the binlog at first event having a offset equal or
+                                                posterior to the argument.
+    --start-datetime <#>                        Start reading the binlog at first event having a datetime equal or
+                                                posterior to the argument, datetime format accepted is
+                                                'YYYY-MM-DD'T'hh:mm:ss', for example: '2004-12-25T11:25:56' (you should
+                                                probably use quotes for your shell to set it properly).
+    --start-gtid <#>                            Start reading the binlog at first event having a gtid equal or posterior
+                                                to the argument.
+    --stop-datetime <#>                         Stop reading the binlog at first event having a datetime equal or
+                                                posterior to the argument, datetime format accepted is
+                                                'YYYY-MM-DD'T'hh:mm:ss', for example: '2004-12-25T11:25:56' (you should
+                                                probably use quotes for your shell to set it properly).
+    --stop-gtid <#>                             Stop reading the binlog at first event having a gtid equal or posterior
+                                                to the argument.
+ -t,--events <events>                           Output only this comma-sparated list of binlog events.
+</pre>
+examples:
+<pre>
+$ ./binlogparser.sh --events='GTID_LOG_EVENT,TABLE_MAP_EVENT,QUERY_EVENT' /data/mysql/8.0.15/binlog/blog.000005
+$ ./binlogparser.sh --start-position=6490000 --event-header-only /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser.sh --start-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14757' --stop-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14758' /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser.sh --stop-datetime='2019-11-13T09:52:16' /data/mysql/8.0.15/binlog/blog.000005
+
+</pre>
+#### (2). 二进制日志挖掘工具 - binlogminer
 可以通过命令行模式或者配置文件方式来配置BinlogMiner来进行二进制数据挖掘。
 - 命令行模式
 <pre>
@@ -62,7 +103,7 @@ MySQL8.0.1+版本开始引入了binlog_row_metadata选项 指定为FULL(非默�
  
 - MySQL通过二进制的QUERY_EVENT事件记录DDL语句, 目前还不支持通过QUERY_EVENT构建UNDO DDL语句，需要手动构建，这在发生表结构修改的时候非常重要. 你不能忽视这些语句，因为很可能导致构建的SQL语句不对。
 
-- 目前支持的字符集包括如下：
+- 默认使用Java的UTF-8进行字符集的解码，目前支持的非UTF-8字符集如下：
 <pre>
     MySQL    |   Java
     ---------+------------
@@ -159,7 +200,7 @@ $ vi miner.xml
 		<Url>jdbc:mysql://127.0.0.1/information_schema</Url>
 		<User>root</User>
 		<Password>Passw0rd</Password>
-		<Properties>useSSL=true;useUnicode=true;characterEncoding=UTF-8;rewriteBatchedStatements=true</Properties>
+		<Properties>useSSL=true;useUnicode=true;characterEncoding=UTF-8;rewriteBatchedStatements=true;sessionVariables=sql_log_bin=0</Properties>
 	</DataSource>
 </Configuration>
 ```

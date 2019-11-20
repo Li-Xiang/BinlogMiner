@@ -139,15 +139,18 @@ public class EventHeader {
 		return getEventSize() - getEventHeaderLength();
 	}
 	
+	public String getText() {
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+		String ts = String.format("%-21s", sf.format(getTimestamp()));
+		String et = String.format("%-28s", getEventType().toString());
+		String si = String.format("%-12s", getServerId());
+		String sp = String.format("%-12s", getStartPosition());
+		String ep = String.format("%-12s", getNextPosition());
+		return ts + et + si + sp + ep;
+	}
+	
 	@Override
 	public String toString() {
-		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-		return getEventType().toString()
-				+", " + sf.format(getTimestamp())
-				+", server-id: " + getServerId()
-				+", start-pos: " + getStartPosition()
-				+", end-pos: "+ getNextPosition();
-				//+", event-flags: "+ getEventFlags();
-		
+		return getText();
 	}
 }

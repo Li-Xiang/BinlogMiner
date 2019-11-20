@@ -34,9 +34,9 @@ import org.littlestar.mysql.binlog.parser.ParserHelper;
  * +------------+
  * |     1 byte | Flags
  * +------------+
- * |    16 bytes| Encoded SID
+ * |    16 bytes| Encoded SID, Server UUID
  * +------------+
- * |     8 bytes| Encoded GNO
+ * |     8 bytes| Encoded GNO, Transaction ID
  * +------------+
  * |     1 byte | lt_type
  * +------------+
@@ -76,7 +76,7 @@ import org.littlestar.mysql.binlog.parser.ParserHelper;
  * +-----------------------------------+
 
 */
-public class GtidEventBody extends EventBodyDefaultImpl {
+public class GtidLogEventBody extends EventBodyDefaultImpl {
 	public static final int ENCODED_FLAG_LENGTH = 1;
 	public static final int ENCODED_SID_LENGTH = 16; 
 	public static final int ENCODED_GNO_LENGTH = 8;
@@ -100,7 +100,7 @@ public class GtidEventBody extends EventBodyDefaultImpl {
 	
 	private int pos = 0;
 	
-	public GtidEventBody(final byte[] bodyData, final EventHeader eventHeader, final BinlogFileMeta meta) {
+	public GtidLogEventBody(final byte[] bodyData, final EventHeader eventHeader, final BinlogFileMeta meta) {
 		super(bodyData, eventHeader, meta);
 		
 		flags = getInteger(bodyData, pos, pos += ENCODED_FLAG_LENGTH);
@@ -141,8 +141,26 @@ public class GtidEventBody extends EventBodyDefaultImpl {
 		return encodedSID;
 	}
 	
+	public String getUUID() {
+		StringBuilder uuid = new StringBuilder(ParserHelper.getHexString(getSID()).toLowerCase());
+		//to uuid (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx )format;
+		uuid.insert(8, '-');
+		uuid.insert(13, '-');
+		uuid.insert(18, '-');
+		uuid.insert(23, '-');
+		return uuid.toString();
+	}
+	
 	public byte[] getGNO() {
 		return encodedGNO;
+	}
+	
+	public long getTransactionId() {
+		return getLong(getGNO());
+	}
+	
+	public String getGtid() {
+		return getUUID()+":"+getTransactionId();
 	}
 	
 	public byte getLogicalTimestampType() {
@@ -178,20 +196,24 @@ public class GtidEventBody extends EventBodyDefaultImpl {
 	
 	@Override
 	public String toString() {
-		String strOcTs = "", strIcTs = "";
+		String output = 
+				    "last_committed               = " + getLastCommitted() 
+				+ "\nsequence_number              = " + getSequenceNumber()
+				+ "\ntransaction_length           = " + transactionLength ;
 		if (getOriginalCommittedTimestamp() != null) {
 			long[] ocTs = getCommittedTimestamp(getOriginalCommittedTimestamp());
-			strOcTs = ParserHelper.getString(new Date(ocTs[0] * 1000L)) + "." + ocTs[1];
+			String strOcTs = ParserHelper.getString(new Date(ocTs[0] * 1000L)) + "." + ocTs[1];
+			output = output + "\noriginal_committed_timestamp = " + strOcTs ;
 		}
 
 		if (getImmediateCommittedTimestamp() != null) {
 			long[] icTs = getCommittedTimestamp(getImmediateCommittedTimestamp());
-			strIcTs = ParserHelper.getString(new Date(icTs[0] * 1000L)) + "." + icTs[1];
+			String strIcTs = ParserHelper.getString(new Date(icTs[0] * 1000L)) + "." + icTs[1];
+			output = output + "\nimmediate_commit_timestamp   = " + strIcTs;
 		}
-
-		return "last_committed = " + getLastCommitted() + ", sequence_number = " + getSequenceNumber()
-				+ ", original_committed_timestamp = " + strOcTs + ", immediate_commit_timestamp = " + strIcTs
-				+ "， transaction_length = " + transactionLength + "\n";
+		output += "\n\n";
+		output = output + "SET @@SESSION.GTID_NEXT= '" +getGtid()+"'\n";
+		return output;   
 
 	}
 }

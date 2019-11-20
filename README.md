@@ -1,5 +1,5 @@
 ## BinlogMiner
-BinlogMiner is a Open Source parser Library and Tools for MySQL binlog, Which can easy to decode MySQL binlog event's 
+BinlogMiner is a Open Source parser Library and Tools (Miner and Parser) for MySQL binlog, Which can easy to decode MySQL binlog event's 
 contents and flashback your table/database by generated executable UNDO/REDO statements. 
 
 *README.zh.md FOR Chinses*
@@ -15,7 +15,7 @@ contents and flashback your table/database by generated executable UNDO/REDO sta
 ### Build/Install
 There are 2 ways to Install BinlogMiner.
 
-1#. dowload  from url (https://github.com/Li-Xiang/BinlogMiner/tree/master/release) and extract it.
+1#. dowload pre-build version (https://sourceforge.net/projects/binlongminer/) and extract it.
 ```shell
 $ tar -xzvf xxx.tar.gz
 ```
@@ -39,6 +39,50 @@ Derby/Java DB's Embedded: $JDK_HOME/db/lib/derby.jar
 </pre>
 
 ### Usage
+
+#### (1). MySQL Binlog Parser - binlogparser
+
+usage：
+<pre>
+$ ./binlogparser.sh --help
+usage: binlogparser.sh [options] log-files
+options:
+ -?,--help                                      Display this help and exit.
+ -b,--byte-order <big_endian | little_endian>   Specify the byte order of the binlog file, the default is the native
+                                                byte order of this Java virtual machine is running.
+ -c,--character-set <name>                      Set the default character set, the default is 'utf8'.
+ -D,--disable-string-decode                     Disable decode the string value, instead of output string's hex value.
+ -e,--stop-position <#>                         Stop reading the binlog at first event having a offset equal or
+                                                posterior to the argument.
+    --event-header-only                         Output common event header only.
+ -s,--start-position <#>                        Start reading the binlog at first event having a offset equal or
+                                                posterior to the argument.
+    --start-datetime <#>                        Start reading the binlog at first event having a datetime equal or
+                                                posterior to the argument, datetime format accepted is
+                                                'YYYY-MM-DD'T'hh:mm:ss', for example: '2004-12-25T11:25:56' (you should
+                                                probably use quotes for your shell to set it properly).
+    --start-gtid <#>                            Start reading the binlog at first event having a gtid equal or posterior
+                                                to the argument.
+    --stop-datetime <#>                         Stop reading the binlog at first event having a datetime equal or
+                                                posterior to the argument, datetime format accepted is
+                                                'YYYY-MM-DD'T'hh:mm:ss', for example: '2004-12-25T11:25:56' (you should
+                                                probably use quotes for your shell to set it properly).
+    --stop-gtid <#>                             Stop reading the binlog at first event having a gtid equal or posterior
+                                                to the argument.
+ -t,--events <events>                           Output only this comma-sparated list of binlog events.
+</pre>
+
+examples:
+<pre>
+$ ./binlogparser.sh --events='GTID_LOG_EVENT,TABLE_MAP_EVENT,QUERY_EVENT' /data/mysql/8.0.15/binlog/blog.000005
+$ ./binlogparser.sh --start-position=6490000 --event-header-only /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser.sh --start-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14757' --stop-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14758' /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser.sh --stop-datetime='2019-11-13T09:52:16' /data/mysql/8.0.15/binlog/blog.000005
+
+</pre>
+
+#### (2). MySQL Binlog Miner - binlogminer.sh
+
 You can use command line arguments or configuration file to setup BinlogMiner to analyze MySQL's binlogs:
 - Command line mode
 <pre>
@@ -64,7 +108,7 @@ Usage reference the 'miner.xml.demo' file.
 
 - All DDL logging in binlog's QUERY_EVENT, QUERY_EVENT couldn't support construct undo statements yet, you need to undo it yourself.
 
-- Support MySQL character set is below:
+- Default using Java utf-8 decode MySQL string, support non-utf8 MySQL character set is below:
 <pre>
     MySQL    |   Java
     ---------+------------

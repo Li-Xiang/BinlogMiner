@@ -205,11 +205,10 @@ public class TableMapEventBody extends EventBodyDefaultImpl {
 	public String toString() {
 		return "table-id = " + getTableId() +", " + getSchemaName()+"."+getTableName() +" {\n"
 				+ getColumnsString()
-				+"}\n"
-				+"optional-meta {"+getOptionalMetaString()+"}\n";
+				+"}\n";
 	}
 	
-	private String getOptionalMetaString() {
+	protected String getOptionalMetaString() {
 		ArrayList<Integer> simplePKCols = optionalMetaData.getSimplePrimaryKey();
 		String simplePK = "";
 		for (int col : simplePKCols) {

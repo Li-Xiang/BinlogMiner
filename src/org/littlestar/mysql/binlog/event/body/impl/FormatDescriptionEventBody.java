@@ -16,7 +16,9 @@
 
 package org.littlestar.mysql.binlog.event.body.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import org.littlestar.mysql.binlog.event.header.EventHeader;
 import org.littlestar.mysql.binlog.parser.BinlogFileMeta;
@@ -64,11 +66,12 @@ public class FormatDescriptionEventBody extends EventBodyDefaultImpl {
 	
 	@Override
 	public String toString() {
-		return "Server Version: " + getServerVersion() 
-				+ "; Binlog Version: " + getBinlogVersion() 
-				+ "; Binlog Created: " + getCreateTimestamp()
-				+ "; Common Header: " + getEventCommonHeaderLength()
-				+ " " + getChecksumString()
+		SimpleDateFormat sf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+		return      "Server Version : " + getServerVersion() 
+				+ "\nBinlog Version : " + getBinlogVersion() 
+				+ "\nBinlog Created : " + sf.format(getCreateTimestamp())
+				+ "\nCommon Header  : " + getEventCommonHeaderLength()
+				+ "\nCheckSum       : " + getChecksumAlgorithmName()
 				+ "\n";
 	}
 }

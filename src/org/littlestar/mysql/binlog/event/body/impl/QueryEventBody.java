@@ -112,7 +112,7 @@ public class QueryEventBody extends EventBodyDefaultImpl {
 			+", exec_time: "+getExecutionTime()
 			+", schema: "+getSchema()
 			+", error_code: "+getErrorCode() + "\n"
-			+"query: "+getQuery()
+			+ getQuery()
 			+"\n";
 	}
 }

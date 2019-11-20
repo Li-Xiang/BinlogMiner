@@ -14,7 +14,7 @@
 	<ByteOrder>little_endian</ByteOrder>
 	<DefaultCharset>utf8</DefaultCharset>
 	<Binlogs>
-		<File>/data/mysql/5.7.18/binlog/blog.000016</File> 
+		<File>/data/mysql/5.7.18/binlog/blog.000023</File> 
 	</Binlogs>
 	<OutputTable dsid="output-database" truncate="true">binlogminer</OutputTable>
 	<ReferenceTable dsid="source-database">information_schema.columns</ReferenceTable>
@@ -23,7 +23,7 @@
 		<Url>jdbc:mysql://127.0.0.1/information_schema</Url>
 		<User>root</User>
 		<Password>Passw0rd</Password>
-		<Properties>useSSL=true;useUnicode=true;characterEncoding=UTF-8;rewriteBatchedStatements=true</Properties>
+		<Properties>useSSL=true;useUnicode=true;characterEncoding=UTF-8;rewriteBatchedStatements=true;sessionVariables=sql_log_bin=0</Properties>
 	</DataSource>
 	<DataSource id="output-database">
 		<Driver>org.sqlite.JDBC</Driver>
