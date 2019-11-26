@@ -20,6 +20,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.Date;
 
+import org.littlestar.mysql.binlog.event.EventType;
 import org.littlestar.mysql.binlog.event.header.EventHeader;
 import org.littlestar.mysql.binlog.parser.BinlogFileMeta;
 import org.littlestar.mysql.binlog.parser.ParserHelper;
@@ -194,6 +195,17 @@ public class GtidLogEventBody extends EventBodyDefaultImpl {
 		return retVal;
 	}
 	
+	private String getGtidNext() {
+		EventType et = getEventHeader().getEventType();
+		if (et.equals(EventType.ANONYMOUS_GTID_LOG_EVENT)) {
+			return "ANONYMOUS";
+		} else if (et.equals(EventType.GTID_LOG_EVENT)) {
+			return getGtid();
+		} else {
+			return "";
+		}
+	}
+	
 	@Override
 	public String toString() {
 		String output = 
@@ -212,7 +224,7 @@ public class GtidLogEventBody extends EventBodyDefaultImpl {
 			output = output + "\nimmediate_commit_timestamp   = " + strIcTs;
 		}
 		output += "\n\n";
-		output = output + "SET @@SESSION.GTID_NEXT= '" +getGtid()+"'\n";
+		output = output + "SET @@SESSION.GTID_NEXT= '" +getGtidNext()+"'\n";
 		return output;   
 
 	}

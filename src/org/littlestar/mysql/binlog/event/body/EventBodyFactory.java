@@ -61,6 +61,7 @@ public class EventBodyFactory {
 		case DELETE_ROWS_EVENT:
 			eventBody = new RowsEventBody(bodyData, eventHeader, binlogFileMeta);
 			break;
+		case ANONYMOUS_GTID_LOG_EVENT:
 		case GTID_LOG_EVENT:
 			eventBody = new GtidLogEventBody(bodyData, eventHeader, binlogFileMeta);
 			break;
