@@ -44,8 +44,8 @@ Derby/Java DB's Embedded: $JDK_HOME/db/lib/derby.jar
 
 usage：
 <pre>
-$ ./binlogparser.sh --help
-usage: binlogparser.sh [options] log-files
+$ ./binlogparser --help
+usage: binlogparser [options] log-files
 options:
  -?,--help                                      Display this help and exit.
  -b,--byte-order <big_endian | little_endian>   Specify the byte order of the binlog file, the default is the native
@@ -74,19 +74,19 @@ options:
 
 examples:
 <pre>
-$ ./binlogparser.sh --events='GTID_LOG_EVENT,TABLE_MAP_EVENT,QUERY_EVENT' /data/mysql/8.0.15/binlog/blog.000005
-$ ./binlogparser.sh --start-position=6490000 --event-header-only /data/mysql/8.0.15/binlog/blog.000005 
-$ ./binlogparser.sh --start-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14757' --stop-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14758' /data/mysql/8.0.15/binlog/blog.000005 
-$ ./binlogparser.sh --stop-datetime='2019-11-13T09:52:16' /data/mysql/8.0.15/binlog/blog.000005
+$ ./binlogparser --events='GTID_LOG_EVENT,TABLE_MAP_EVENT,QUERY_EVENT' /data/mysql/8.0.15/binlog/blog.000005
+$ ./binlogparser --start-position=6490000 --event-header-only /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser --start-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14757' --stop-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14758' /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser --stop-datetime='2019-11-13T09:52:16' /data/mysql/8.0.15/binlog/blog.000005
 
 </pre>
 
-#### (2). MySQL Binlog Miner - binlogminer.sh
+#### (2). MySQL Binlog Miner - binlogminer
 
 You can use command line arguments or configuration file to setup BinlogMiner to analyze MySQL's binlogs:
 - Command line mode
 <pre>
-$ binlogminer.sh [binlog-file1; binlog-file2; ...] [little_endian | big_endian] 
+$ binlogminer [binlog-file1; binlog-file2; ...] [little_endian | big_endian] 
   Argument 1#  the paths of binlog files to be analysis, files split by ';'.
   Argument 2# (optional) the byte order of binlog files, if not specific, using native byte order.
 
@@ -399,7 +399,6 @@ while (parser.hasEvent()) {
 parser.close();
 connection.close();
 ```
-
 
 ### Contact Me
 lee.xiang@hotmail.com

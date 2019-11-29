@@ -40,8 +40,8 @@ SQLite: https://repo1.maven.org/maven2/org/xerial/sqlite-jdbc/
   可以通过指定偏移（--start-position|--stop-position）来查找或者输出指定范围的事件，偏移值不需要必须为一个事件的开始位置；
   如果开启了gtid模式（gtid_mode=on）,可以指定gtid范围（--start-gtid|--stop-gtid）；
 <pre>
-$ ./binlogparser.sh --help
-usage: binlogparser.sh [options] log-files
+$ ./binlogparser --help
+usage: binlogparser [options] log-files
 options:
  -?,--help                                      Display this help and exit.
  -b,--byte-order <big_endian | little_endian>   Specify the byte order of the binlog file, the default is the native
@@ -69,17 +69,17 @@ options:
 </pre>
 examples:
 <pre>
-$ ./binlogparser.sh --events='GTID_LOG_EVENT,TABLE_MAP_EVENT,QUERY_EVENT' /data/mysql/8.0.15/binlog/blog.000005
-$ ./binlogparser.sh --start-position=6490000 --event-header-only /data/mysql/8.0.15/binlog/blog.000005 
-$ ./binlogparser.sh --start-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14757' --stop-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14758' /data/mysql/8.0.15/binlog/blog.000005 
-$ ./binlogparser.sh --stop-datetime='2019-11-13T09:52:16' /data/mysql/8.0.15/binlog/blog.000005
+$ ./binlogparser --events='GTID_LOG_EVENT,TABLE_MAP_EVENT,QUERY_EVENT' /data/mysql/8.0.15/binlog/blog.000005
+$ ./binlogparser --start-position=6490000 --event-header-only /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser --start-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14757' --stop-gtid='29e14539-0466-11ea-8cb2-080027a92a27:14758' /data/mysql/8.0.15/binlog/blog.000005 
+$ ./binlogparser --stop-datetime='2019-11-13T09:52:16' /data/mysql/8.0.15/binlog/blog.000005
 
 </pre>
 #### (2). 二进制日志挖掘工具 - binlogminer
 可以通过命令行模式或者配置文件方式来配置BinlogMiner来进行二进制数据挖掘。
 - 命令行模式
 <pre>
-$ binlogminer.sh [binlog-file1; binlog-file2; ...] [little_endian | big_endian] 
+$ binlogminer [binlog-file1; binlog-file2; ...] [little_endian | big_endian] 
   参数1# 指定要分析的二进制文件路径，支持指定多个文件, 每个文件使用';'进行分隔.
   参数2# (可选) 指定二进制文件的字节序，默认使用本地的字节序号。
 
@@ -206,7 +206,7 @@ $ vi miner.xml
 ```
 步骤2# 执行数据挖掘
 ```shell
-$ ./binlogminer.sh
+$ ./binlogminer
 ```
 步骤3# 通过查询输出表，获取需要的语句。可以参考输出表的表结构，构建需要的过滤条件，如事件，开始位置等，这里只是个例子。
 ```sql
@@ -250,7 +250,7 @@ mysql -uxxx -pxxx < flashback.sql
 #### 2. 使用命令行模式获取对应语句
 <pre>
 
-$ ./binlogminer.sh /data/mysql/5.7.18/binlog/blog.000016 little_endian
+$ ./binlogminer /data/mysql/5.7.18/binlog/blog.000016 little_endian
 ...
 2019-09-05 10:52:30 QUERY_EVENT . start-pos: 259 end-pos: 327
 REDO# BEGIN

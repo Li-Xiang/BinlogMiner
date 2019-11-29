@@ -244,7 +244,7 @@ public class BinlogParserApp {
 				if (et.equals(EventType.GTID_LOG_EVENT)) {
 					GtidLogEventBody gtidLogBody = (GtidLogEventBody) event.getBody();
 					long currTid = new Gtid(gtidLogBody.getGtid()).getTransactionId();
-					if (currTid >= stopTid) {
+					if (currTid > stopTid) {
 						break;
 					}
 				}
@@ -265,7 +265,7 @@ public class BinlogParserApp {
 			EventHeader header = event.getHeader();
 			long eventDatetime = header.getTimestamp().getTime();
 			if (eventDatetime >= startDatetime) {
-				if (stopDatetime > 0 & eventDatetime >= stopDatetime) {
+				if (stopDatetime > 0 & eventDatetime > stopDatetime) {
 					break;
 				}
 				output(event, eventFilter, headerOnly);
@@ -288,7 +288,7 @@ public class BinlogParserApp {
 			long sPos = header.getStartPosition();
 			long ePos = header.getNextPosition();
 			if (sPos >= startPos) { //当事件的开始偏移大于--start-position, 开始输出；
-				if (stopPos > 0 & ePos >= stopPos) { //当事件结束偏移大于--stop-position, 结束输出；
+				if (stopPos > 0 & ePos > stopPos) { //当事件结束偏移大于--stop-position, 结束输出；
 					break;
 				}
 				output(event, eventFilter, headerOnly);
