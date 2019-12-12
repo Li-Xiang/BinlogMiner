@@ -333,7 +333,7 @@ public class ParserHelper {
 		int pos = 0;
 		int rows = bytes.length / rowlen;
 		for (int i = 0; i < rows; i++) {
-			strValue.append(lpad(Integer.toHexString((i + 1) * rowlen), 8, '0') + "h: ");
+			strValue.append(lpad(Integer.toHexString((i) * rowlen), 8, '0') + "h: ");
 			for (int j = 0; j < rowlen; j++) {
 				byte byteValue = bytes[pos++];
 				String hexValue = ParserHelper.getHexString(byteValue);
@@ -343,7 +343,7 @@ public class ParserHelper {
 		}
 		// less bytes.
 		if (pos < bytes.length) {
-			strValue.append(lpad(Integer.toHexString((rows + 1) * rowlen), 8, '0') + "h: ");
+			strValue.append(lpad(Integer.toHexString((rows) * rowlen), 8, '0') + "h: ");
 			for (int k = pos; k < bytes.length; k++) {
 				byte byteValue = bytes[pos++];
 				String hexValue = ParserHelper.getHexString(byteValue);

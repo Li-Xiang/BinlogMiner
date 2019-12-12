@@ -54,6 +54,7 @@ public class BinlogParserApp {
 	private static final String STOP_GTID_OPTION_NAME = "stop-gtid";
 	private static final String EVENTS_OPTION_NAME = "events";
 	private static final String EVENT_HEADER_ONLY = "event-header-only";
+	private static final String DISABLE_EVENT_BODY_DECODE = "disable-event-body-decode";
 	
 	protected static Options options = getOptions();
 	public static void main(String[] args) throws Throwable {
@@ -166,14 +167,22 @@ public class BinlogParserApp {
 			headerOnly = true;
 		}
 		
+		boolean isDecodeBody = true;
+		if (cli.hasOption(DISABLE_EVENT_BODY_DECODE)) {
+			isDecodeBody = false;
+		}
+		
 		int rangeFilterCount = trueCount(offsetRange, datetimeRange, gtidRange);
 		if (rangeFilterCount > 1) {
 			throw new Throwable("The command cant have either --{start|stop}-position or --{start|stop}-datetime or --{start|stop}-gtid at one time");
 		}
 		
 		final String logFile = logfiles.get(0);
-		BinlogParserBuilder builder = BinlogParserBuilder.newBuilder(logFile).withByteOrder(order)
-				.decodeString(encodeString).withCharSet(charset);
+		BinlogParserBuilder builder = BinlogParserBuilder.newBuilder(logFile)
+				.withByteOrder(order)
+				.decodeString(encodeString)
+				.withCharSet(charset)
+				.decodeEventBody(isDecodeBody);
 		if (gtidRange) {
 			if (eventFilter != null) {
 				if (eventFilter.size() > 0) {
@@ -328,7 +337,7 @@ public class BinlogParserApp {
 	    options.addOption(Option.builder().longOpt(STOP_GTID_OPTION_NAME).hasArg().argName("#").desc("Stop reading the binlog at first event having a gtid equal or posterior to the argument.").build());
 	    options.addOption(Option.builder().longOpt(START_DATETIME_OPTION_NAME).hasArg().argName("#").desc("Start reading the binlog at first event having a datetime equal or posterior to the argument, datetime format accepted is 'YYYY-MM-DD'T'hh:mm:ss', for example: '2004-12-25T11:25:56' (you should probably use quotes for your shell to set it properly).").build());
 	    options.addOption(Option.builder().longOpt(STOP_DATETIME_OPTION_NAME).hasArg().argName("#").desc("Stop reading the binlog at first event having a datetime equal or posterior to the argument, datetime format accepted is 'YYYY-MM-DD'T'hh:mm:ss', for example: '2004-12-25T11:25:56' (you should probably use quotes for your shell to set it properly).").build());
-	    //options.addOption(Option.builder("d").longOpt(DATABASE_OPTION_NAME).hasArg().argName("name").desc("List entries for just this database only.").build());
+	    options.addOption(Option.builder().longOpt(DISABLE_EVENT_BODY_DECODE).desc("Disable decode event body contents, return event body Hex value only.").build());
 	    options.addOption(Option.builder("t").longOpt(EVENTS_OPTION_NAME).hasArg().argName("events").desc("Output only this comma-sparated list of binlog events.").build());
 	    options.addOption(Option.builder().longOpt(EVENT_HEADER_ONLY).desc("Output common event header only.").build());
 	    return options;

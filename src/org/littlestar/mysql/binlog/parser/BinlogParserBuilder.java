@@ -59,7 +59,8 @@ public class BinlogParserBuilder {
 	private final String binlogFileName;
 	private ByteOrder order ;
 	private HashSet<EventType> eventFilter = null;
-	private Boolean decodeString ;
+	private Boolean decodeString = true;
+	private Boolean decodeEventBody = true;
 	private String defaultCharsetName = null;
 	
 	private BinlogParserBuilder(String binlogFileName) throws Throwable {
@@ -96,6 +97,11 @@ public class BinlogParserBuilder {
 		return this;
 	}
 	
+	public BinlogParserBuilder decodeEventBody(boolean decode) {
+		decodeEventBody = decode;
+		return this;
+	}
+	
 	public BinlogParserBuilder withCharSet(String defaultMysqlCharsetName) {
 		defaultCharsetName = defaultMysqlCharsetName;
 		return this;
@@ -111,7 +117,7 @@ public class BinlogParserBuilder {
 		if (defaultCharsetName != null) {
 			fileMeta.setDefaultCharsetName(defaultCharsetName);
 		}
-		return BinlogParser4.newParser(fileMeta, eventFilter);
+		return BinlogParser4.newParser(fileMeta, eventFilter, decodeEventBody);
 	}
 	
 	private BinlogFileMeta getBinlogFileMeta() throws Throwable {

@@ -34,6 +34,7 @@ public class BinlogParser4 implements BinlogParser {
 	private final BinlogFileMappedByteBuffer fileMappedBuffer;
 	private final BinlogFileMeta binlogFileMeta;
 	private ByteOrder order ;
+	private boolean isDecodeBody = true;
 	private HashSet<EventType> eventFilter = null;
 
 	private BinlogParser4(final BinlogFileMeta binlogFileMeta) throws Throwable {
@@ -57,6 +58,18 @@ public class BinlogParser4 implements BinlogParser {
 		return new BinlogParser4(binlogFileMeta);
 	}
 
+	public static BinlogParser4 newParser(final BinlogFileMeta binlogFileMeta, HashSet<EventType> eventFilter, boolean isDecode) throws Throwable {
+		BinlogParser4 parser = new BinlogParser4(binlogFileMeta);
+		parser.setDecodeBody(isDecode);
+		if (eventFilter != null)
+			parser.setEventFilter(eventFilter);
+		return parser;
+	}
+	
+	private void setDecodeBody(boolean isDecode) {
+		isDecodeBody  = isDecode;
+	}
+	
 	private void setEventFilter(HashSet<EventType> eventFilter) {
 		this.eventFilter = eventFilter;
 	}
@@ -159,7 +172,7 @@ public class BinlogParser4 implements BinlogParser {
 	private EventBody getEventBody(final EventHeader eventHeader) {
 		try {
 			byte[] rawEventBody = fileMappedBuffer.getBytes(eventHeader.getEventBodyLength());
-			EventBody eventBody = EventBodyFactory.createEventBody(rawEventBody, eventHeader, binlogFileMeta);
+			EventBody eventBody = EventBodyFactory.createEventBody(rawEventBody, eventHeader, binlogFileMeta, isDecodeBody);
 			if (eventHeader.getEventType().equals(EventType.TABLE_MAP_EVENT)) {
 				TableMapEventBody tableMapEventBody = (TableMapEventBody) eventBody;
 				binlogFileMeta.putTableMapEventBody(tableMapEventBody);

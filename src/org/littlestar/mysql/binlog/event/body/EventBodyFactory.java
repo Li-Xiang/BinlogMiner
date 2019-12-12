@@ -18,7 +18,9 @@ package org.littlestar.mysql.binlog.event.body;
 
 import org.littlestar.mysql.binlog.event.EventType;
 import org.littlestar.mysql.binlog.event.body.EventBody;
+import org.littlestar.mysql.binlog.event.body.impl.BeginLoadQueryEvent;
 import org.littlestar.mysql.binlog.event.body.impl.EventBodyDefaultImpl;
+import org.littlestar.mysql.binlog.event.body.impl.ExecuteLoadQueryEvent;
 import org.littlestar.mysql.binlog.event.body.impl.FormatDescriptionEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.GtidLogEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.PreviousGtidsLogEventBody;
@@ -28,14 +30,18 @@ import org.littlestar.mysql.binlog.event.body.impl.RowsEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.StartEventV3Body;
 import org.littlestar.mysql.binlog.event.body.impl.StopEventBody;
 import org.littlestar.mysql.binlog.event.body.impl.TableMapEventBody;
+import org.littlestar.mysql.binlog.event.body.impl.UserVarEvent;
 import org.littlestar.mysql.binlog.event.body.impl.XidEventBody;
 import org.littlestar.mysql.binlog.event.header.EventHeader;
 import org.littlestar.mysql.binlog.parser.BinlogFileMeta;
 
 public class EventBodyFactory {
 	public static EventBody createEventBody(final byte[] bodyData, final EventHeader eventHeader,
-			final BinlogFileMeta binlogFileMeta) {
-		EventBody eventBody = null;
+			final BinlogFileMeta binlogFileMeta, boolean isDecode) {
+		if (!isDecode) {
+			return new EventBodyDefaultImpl(bodyData, eventHeader, binlogFileMeta);
+		}
+		EventBody eventBody = null;	
 		EventType type = eventHeader.getEventType();
 		switch (type) {
 		case FORMAT_DESCRIPTION_EVENT:
@@ -73,6 +79,15 @@ public class EventBodyFactory {
 			break;
 		case STOP_EVENT:
 			eventBody = new StopEventBody(bodyData, eventHeader, binlogFileMeta);
+			break;
+		case BEGIN_LOAD_QUERY_EVENT:
+			eventBody = new BeginLoadQueryEvent(bodyData, eventHeader, binlogFileMeta);
+			break;
+		case USER_VAR_EVENT:
+			eventBody = new UserVarEvent(bodyData, eventHeader, binlogFileMeta);
+			break;
+		case EXECUTE_LOAD_QUERY_EVENT:
+			eventBody = new ExecuteLoadQueryEvent(bodyData, eventHeader, binlogFileMeta);
 			break;
 		default:
 			eventBody = new EventBodyDefaultImpl(bodyData, eventHeader, binlogFileMeta);
